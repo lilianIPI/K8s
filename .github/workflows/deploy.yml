@@ -1,0 +1,50 @@
+name: K8s Container Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  contents: read
+  packages: write   # autorise la publication d'images sur GHCR
+
+jobs:
+  # 1. Construire l'image et la publier sur GitHub Container Registry (GHCR)
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Nom de l'image en minuscules
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/webapp" >> "$GITHUB_ENV"
+
+      - name: Connexion a GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build et push
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          push: true
+          tags: ${{ env.IMAGE }}:${{ github.sha }}
+
+  # 2. Deployer l'image sur un cluster Kubernetes ephemere (kind)
+  deploy-k8s:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Nom de l'image en minuscules
+        run: echo "IMAGE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}/webapp" >> "$GITHUB_ENV"
+
+      - name: Creer un cluster Kubernetes ephemere (kind)
+        uses: helm/kind-action@v1
+        with:
+          cluster_name: tp3
+
+      - name: Creer le secret pour tirer
