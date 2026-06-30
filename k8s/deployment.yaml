@@ -5,7 +5,7 @@ metadata:
   labels:
     app: webapp
 spec:
-  replicas: 2
+  replicas: 3 #Changement du nombre de réplicats créer par k8s
   selector:
     matchLabels:
       app: webapp
