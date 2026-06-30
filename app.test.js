@@ -1,15 +1,5 @@
-{
-  "name": "devsecops-app",
-  "version": "1.0.0",
-  "scripts": {
-    "test": "jest --coverage"
-  },
-  "dependencies": {
-    "docx": "*",
-    "express": "^4.21.2",
-    "pptxgenjs": "*"
-  },
-  "devDependencies": {
-    "jest": "^29.0.0"
-  }
-}
+const { calcul } = require('./app');
+
+test('2 + 3 = 5', () => {
+  expect(calcul(2, 3)).toBe(5);
+});
